@@ -102,4 +102,6 @@ export default createStore({
     username: state => state.username,
     movies: state => state.movies,
     loading: state => state.loading,
-    error: st
+    error: state => state.error,
+  },
+});

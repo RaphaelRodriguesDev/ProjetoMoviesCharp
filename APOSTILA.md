@@ -27,13 +27,13 @@ Nesta parte você vai instalar todas as ferramentas necessárias.
 
 ## 1. Requisitos Mínimos
 
-| Item | Mínimo | Recomendado |
-|------|--------|-------------|
-| Sistema Operacional | Windows 10 | Windows 11 |
-| Memória RAM | 4 GB | 8 GB ou mais |
-| Espaço em Disco | 5 GB livres | 10 GB livres |
-| Processador | Dual-core | Quad-core |
-| Internet | Necessária | Banda larga |
+| Item                | Mínimo      | Recomendado  |
+| ------------------- | ----------- | ------------ |
+| Sistema Operacional | Windows 10  | Windows 11   |
+| Memória RAM         | 4 GB        | 8 GB ou mais |
+| Espaço em Disco     | 5 GB livres | 10 GB livres |
+| Processador         | Dual-core   | Quad-core    |
+| Internet            | Necessária  | Banda larga  |
 
 ---
 
@@ -326,17 +326,17 @@ O `package.json` define o projeto e suas dependências.
 
 ### O que cada dependência faz:
 
-| Dependência | Função |
-|-------------|--------|
-| `vue` | Framework JavaScript reativo |
-| `vue-router` | Navegação entre páginas |
-| `vuex` | Estado global da aplicação |
-| `vuetify` | Componentes visuais (Material Design) |
-| `@mdi/font` | Ícones Material Design |
-| `axios` | Requisições HTTP para a API |
-| `vite` | Servidor de desenvolvimento |
-| `@vitejs/plugin-vue` | Plugin Vite para Vue |
-| `sass` | Pré-processador CSS |
+| Dependência          | Função                                |
+| -------------------- | ------------------------------------- |
+| `vue`                | Framework JavaScript reativo          |
+| `vue-router`         | Navegação entre páginas               |
+| `vuex`               | Estado global da aplicação            |
+| `vuetify`            | Componentes visuais (Material Design) |
+| `@mdi/font`          | Ícones Material Design                |
+| `axios`              | Requisições HTTP para a API           |
+| `vite`               | Servidor de desenvolvimento           |
+| `@vitejs/plugin-vue` | Plugin Vite para Vue                  |
+| `sass`               | Pré-processador CSS                   |
 
 ---
 
@@ -600,12 +600,12 @@ export function isLoggedIn() {
 
 ### Tabela de Métodos HTTP:
 
-| Método | Função | Exemplo |
-|--------|--------|---------|
-| `GET` | Buscar dados | `api.get("/Movie/get-all")` |
-| `POST` | Criar novo | `api.post("/Movie", dados)` |
-| `PUT` | Atualizar | `api.put("/Movie/1", dados)` |
-| `DELETE` | Deletar | `api.delete("/Movie/1")` |
+| Método   | Função       | Exemplo                      |
+| -------- | ------------ | ---------------------------- |
+| `GET`    | Buscar dados | `api.get("/Movie/get-all")`  |
+| `POST`   | Criar novo   | `api.post("/Movie", dados)`  |
+| `PUT`    | Atualizar    | `api.put("/Movie/1", dados)` |
+| `DELETE` | Deletar      | `api.delete("/Movie/1")`     |
 
 ---
 
@@ -783,13 +783,13 @@ export default router;
 
 ### Tabela de Rotas:
 
-| Rota | Página | Protegida? |
-|------|--------|------------|
-| `/` | HomePage | Não |
-| `/login` | LoginPage | Não |
-| `/register` | RegisterPage | Não |
-| `/movies` | MoviesPage | Não |
-| `/admin` | AdminPage | **Sim** |
+| Rota        | Página       | Protegida? |
+| ----------- | ------------ | ---------- |
+| `/`         | HomePage     | Não        |
+| `/login`    | LoginPage    | Não        |
+| `/register` | RegisterPage | Não        |
+| `/movies`   | MoviesPage   | Não        |
+| `/admin`    | AdminPage    | **Sim**    |
 
 ---
 
@@ -1858,16 +1858,16 @@ export default {
 
 ## Diretivas Vue
 
-| Diretiva | Função | Exemplo |
-|----------|--------|---------|
-| `v-if` | Renderiza condicionalmente | `<div v-if="loading">Carregando...</div>` |
-| `v-else` | Complemento do v-if | `<div v-else>Conteúdo</div>` |
-| `v-else-if` | Condição alternativa | `<div v-else-if="error">Erro</div>` |
-| `v-show` | Mostra/esconde (CSS) | `<div v-show="visible">Visível</div>` |
-| `v-for` | Loop em arrays | `<div v-for="item in itens" :key="item.id">` |
-| `v-model` | Two-way binding | `<input v-model="nome">` |
-| `v-bind` ou `:` | Binding de atributo | `<img :src="imagem">` |
-| `v-on` ou `@` | Escutar evento | `<button @click="salvar">` |
+| Diretiva        | Função                     | Exemplo                                      |
+| --------------- | -------------------------- | -------------------------------------------- |
+| `v-if`          | Renderiza condicionalmente | `<div v-if="loading">Carregando...</div>`    |
+| `v-else`        | Complemento do v-if        | `<div v-else>Conteúdo</div>`                 |
+| `v-else-if`     | Condição alternativa       | `<div v-else-if="error">Erro</div>`          |
+| `v-show`        | Mostra/esconde (CSS)       | `<div v-show="visible">Visível</div>`        |
+| `v-for`         | Loop em arrays             | `<div v-for="item in itens" :key="item.id">` |
+| `v-model`       | Two-way binding            | `<input v-model="nome">`                     |
+| `v-bind` ou `:` | Binding de atributo        | `<img :src="imagem">`                        |
+| `v-on` ou `@`   | Escutar evento             | `<button @click="salvar">`                   |
 
 ---
 
@@ -1935,18 +1935,18 @@ this.$router.push('/admin')
 
 ## Resumo
 
-| Conceito | Onde Usar | Exemplo |
-|----------|-----------|---------|
-| `data()` | Estado local | `loading: false` |
-| `computed` | Dados do store | `movies()`, `username()` |
-| `methods` | Funções | `salvar()` |
-| `mounted()` | Ao carregar | `fetchMovies()` |
-| `props` | Receber do pai | `:movie="filme"` |
-| `emits` | Enviar ao pai | `@save="handleSave"` |
-| `v-if` | Condicional | `v-if="loading"` |
-| `v-for` | Loop | `v-for="m in movies"` |
-| `v-model` | Two-way | `v-model="nome"` |
-| `slot` | Conteúdo dinâmico | `<slot name="actions">` |
+| Conceito    | Onde Usar         | Exemplo                  |
+| ----------- | ----------------- | ------------------------ |
+| `data()`    | Estado local      | `loading: false`         |
+| `computed`  | Dados do store    | `movies()`, `username()` |
+| `methods`   | Funções           | `salvar()`               |
+| `mounted()` | Ao carregar       | `fetchMovies()`          |
+| `props`     | Receber do pai    | `:movie="filme"`         |
+| `emits`     | Enviar ao pai     | `@save="handleSave"`     |
+| `v-if`      | Condicional       | `v-if="loading"`         |
+| `v-for`     | Loop              | `v-for="m in movies"`    |
+| `v-model`   | Two-way           | `v-model="nome"`         |
+| `slot`      | Conteúdo dinâmico | `<slot name="actions">`  |
 
 ---
 
