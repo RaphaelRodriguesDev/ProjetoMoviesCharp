@@ -14,6 +14,7 @@ namespace Movies.API.Controllers;
 [Authorize]
 public class UserController : ControllerBase
 {
+    [AllowAnonymous]
     [HttpPost]
     public IActionResult Create(
         [FromBody] UserCreateRequest request

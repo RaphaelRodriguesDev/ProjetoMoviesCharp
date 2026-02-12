@@ -18,10 +18,11 @@ Nesta parte você vai instalar todas as ferramentas necessárias.
 1. [Requisitos Mínimos](#1-requisitos-mínimos)
 2. [Instalando o Node.js](#2-instalando-o-nodejs)
 3. [Instalando o Visual Studio Code](#3-instalando-o-visual-studio-code)
-4. [Instalando o Git](#4-instalando-o-git)
-5. [Instalando o .NET SDK](#5-instalando-o-net-sdk)
-6. [Configurando o Backend](#6-configurando-o-backend)
-7. [Resolvendo Problemas Comuns](#7-resolvendo-problemas-comuns)
+4. [Instalando o Visual Studio Community](#4-instalando-o-visual-studio-community)
+5. [Instalando o Git](#5-instalando-o-git)
+6. [Instalando o .NET SDK](#6-instalando-o-net-sdk)
+7. [Configurando o Backend](#7-configurando-o-backend)
+8. [Resolvendo Problemas Comuns](#8-resolvendo-problemas-comuns)
 
 ---
 
@@ -106,7 +107,48 @@ O VS Code é o editor de código que usaremos.
 
 ---
 
-## 4. Instalando o Git
+## 4. Instalando o Visual Studio Community
+
+O Visual Studio Community é a IDE usada para desenvolver e executar o backend (.NET 8.0).
+
+### Passo 1: Baixar
+1. Acesse: **https://visualstudio.microsoft.com/pt-br/vs/community/**
+2. Clique no botão **"Download gratuito"**
+
+### Passo 2: Instalar
+1. Execute o arquivo `VisualStudioSetup.exe`
+2. O **Visual Studio Installer** será aberto
+3. Na tela de **Cargas de trabalho**, marque:
+   - ☑️ **Desenvolvimento Web e em ASP.NET** (obrigatório para .NET 8.0)
+4. Clique **"Instalar"**
+5. Aguarde o download e instalação (pode demorar 10-30 minutos)
+6. Ao finalizar, clique **"Iniciar"**
+
+### Passo 3: Configuração Inicial
+1. Na primeira abertura, escolha o tema de cores (Escuro é o mais popular)
+2. Clique **"Iniciar o Visual Studio"**
+
+### Passo 4: Verificar
+1. Abra o Visual Studio Community
+2. Vá em **Help > About Microsoft Visual Studio**
+3. Deve aparecer: `Visual Studio Community 2022 - Version 17.X.X`
+
+### Para que usamos o Visual Studio Community?
+
+| Função             | Descrição                                   |
+| ------------------ | ------------------------------------------- |
+| Executar o Backend | Rodar a API .NET 8.0 com debug              |
+| Gerenciar NuGet    | Instalar pacotes como EF Core, JWT, Npgsql  |
+| Swagger            | Testar endpoints diretamente no navegador   |
+| Debug              | Colocar breakpoints e inspecionar variáveis |
+
+> 💡 **Dica:** O VS Code é usado para o **frontend** (Vue.js) e o Visual Studio Community para o **backend** (.NET).
+
+✅ **Visual Studio Community instalado com sucesso!**
+
+---
+
+## 5. Instalando o Git
 
 O Git é usado para baixar e versionar código.
 
@@ -134,13 +176,13 @@ git --version
 
 ---
 
-## 5. Instalando o .NET SDK
+## 6. Instalando o .NET SDK
 
 O .NET é necessário para executar o backend (API em C#).
 
 ### Passo 1: Baixar
-1. Acesse: **https://dotnet.microsoft.com/download**
-2. Clique em **".NET 8.0"** (ou versão mais recente LTS)
+1. Acesse: **https://dotnet.microsoft.com/pt-br/download/dotnet**
+2. Clique em **".NET 8.0"**
 3. Clique em **"Download .NET SDK x64"**
 
 ### Passo 2: Instalar
@@ -162,7 +204,12 @@ dotnet --version
 
 ---
 
-## 6. Configurando o Backend
+## 7. Configurando o Backend (.NET 8.0 + EF Core + JWT)
+
+> ⚠️ **IMPORTANTE:** O backend (.NET 8.0) **NÃO será alterado** durante a aula de frontend.  
+> Ele já está pronto e serve como referência de endpoints para o frontend.
+
+---
 
 ### Passo 1: Baixar o Projeto
 
@@ -182,18 +229,339 @@ cd Movies.API
 2. Vá em **File > Open Folder**
 3. Selecione a pasta `Movies.API`
 
-### Passo 3: Restaurar dependências
-1. No VS Code, pressione `` Ctrl + ` `` (crase) para abrir o terminal
-2. Digite:
+### Passo 3: Acessar a pasta do projeto
 ```bash
-cd Movies.API
+cd .\Movies.API\
+```
+
+### Passo 4: Restaurar dependências
+```bash
 dotnet restore
 ```
 
-### Passo 4: Aplicar Migrations (criar tabelas)
+---
+
+### 📦 Pacotes NuGet Necessários
+
+Instalar via **Gerenciador de Pacotes NuGet** do projeto (botão direito no projeto > Manage NuGet Packages):
+
+| Pacote                                               | Função                            |
+| ---------------------------------------------------- | --------------------------------- |
+| `Npgsql.EntityFrameworkCore.PostgreSQL`              | PostgreSQL para EF Core           |
+| `Microsoft.EntityFrameworkCore`                      | Entity Framework Core             |
+| `Microsoft.EntityFrameworkCore.Design`               | Ferramentas de migration          |
+| `Microsoft.AspNetCore.Authentication.JwtBearer` (v8) | Autenticação Bearer/JWT           |
+| `System.IdentityModel.Tokens.Jwt`                    | Geração e validação de tokens JWT |
+
+---
+
+### 🧱 Configuração do Entity Framework Core
+
+**1️⃣ Instalar o dotnet-ef (ferramenta global):**
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+**2️⃣ Instalar o pacote Design no projeto:**
+```bash
+dotnet add package Microsoft.EntityFrameworkCore.Design
+```
+
+**3️⃣ Criar a primeira migration:**
+```bash
+dotnet ef migrations add DatabaseCreation
+```
+
+**4️⃣ Atualizar o banco de dados (criar tabelas):**
 ```bash
 dotnet ef database update
 ```
+
+> ⚠️ **Observação sobre erros de migration:**  
+> Se ocorrer erro no código ou estrutura:
+> 1. Apague a pasta `Migrations/`
+> 2. Crie novamente: `dotnet ef migrations add DatabaseCreation`
+> 3. Atualize: `dotnet ef database update`
+
+---
+
+### 🗑️ Exclusão e Recriação do Banco (se necessário)
+
+Se o banco foi criado sem as tabelas `Users` e `Movies`:
+
+1. **Excluir** o database `movies` no pgAdmin
+2. Criar nova migration que contenha obrigatoriamente:
+   - Tabela **Users**
+   - Tabela **Movies**
+3. Atualizar o banco novamente:
+```bash
+dotnet ef database update
+```
+
+O banco será recriado automaticamente com as duas tabelas.
+
+---
+
+### 🔐 Configuração de Autenticação (JWT Bearer Token)
+
+O backend utiliza **JWT (JSON Web Token)** para proteger os endpoints.
+
+#### O que é JWT?
+
+```
+1. Usuário envia credenciais (username + password)
+2. Backend valida e gera um TOKEN (string codificada)
+3. Frontend guarda o token no localStorage
+4. Em toda requisição, o frontend envia o token no header
+5. Backend valida o token e libera o acesso
+```
+
+#### Configuração no appsettings.json:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=127.0.0.1;Port=5433;Database=movies;Username=postgres;Password=123456"
+  },
+  "JwtSettings": {
+    "Key": "YourStrongSecretKeyHere1234567890",
+    "Issuer": "YourAppIssuer",
+    "Audience": "YourAppAudience",
+    "DurationMinutes": 60
+  }
+}
+```
+
+| Campo             | Função                                |
+| ----------------- | ------------------------------------- |
+| `Key`             | Chave secreta para assinar o token    |
+| `Issuer`          | Quem emitiu o token (backend)         |
+| `Audience`        | Para quem o token é válido (frontend) |
+| `DurationMinutes` | Tempo de validade do token (60 min)   |
+
+#### Configuração no Program.cs (.NET 8.0):
+
+```csharp
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Movies.API.Authentication;
+
+var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+// Lê configurações do JWT
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
+    ?? throw new InvalidOperationException("JwtSettings section is not configured. Please add JwtSettings in appsettings.json.");
+
+// Configura autenticação JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key ?? string.Empty))
+        };
+    });
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your token}"
+    };
+
+    c.AddSecurityDefinition("Bearer", securityScheme);
+
+    var securityRequirement = new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                In = ParameterLocation.Header
+            },
+            new List<string>()
+        }
+    };
+
+    c.AddSecurityRequirement(securityRequirement);
+});
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+```
+
+---
+
+### 🔓 O que é [Authorize] e [AllowAnonymous]?
+
+| Atributo           | Função                                              |
+| ------------------ | --------------------------------------------------- |
+| `[Authorize]`      | **Exige** token JWT válido. Sem token → erro 401    |
+| `[AllowAnonymous]` | **Libera** o método para acesso público (sem token) |
+
+#### Exemplo no UserController:
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]                    // ← TODO o controller exige JWT
+public class UserController : ControllerBase
+{
+    [AllowAnonymous]           // ← MAS este método é público (sem JWT)
+    [HttpPost]                 // POST /api/User → Cadastro livre
+    public IActionResult Create([FromBody] UserCreateRequest request)
+    {
+        // Qualquer pessoa pode criar uma conta
+    }
+
+    [HttpGet("{id:int}")]      // GET /api/User/1 → Precisa de JWT
+    public IActionResult GetById(int id) { ... }
+}
+```
+
+#### Por que o cadastro é público?
+
+> **Como alguém pode criar uma conta se precisa estar logado para criar uma conta?**
+
+Por isso `[AllowAnonymous]` no `Create` é necessário e seguro:
+- ✅ Permite cadastro sem login (essencial para novos usuários)
+- ✅ A senha é criptografada antes de salvar no banco
+- ✅ O token JWT **só é emitido** após login com credenciais válidas
+- ✅ Todas as outras rotas continuam protegidas por `[Authorize]`
+
+---
+
+### 👤 Criando o Primeiro Usuário (Administrador)
+
+> ⚠️ **Regra de Arquitetura (Muito Importante):**  
+> Todo sistema deve iniciar com um **usuário administrador**.  
+> O administrador é essencial para gerenciar usuários, controlar permissões e garantir a segurança do sistema.
+
+#### Passo a passo para criar o primeiro usuário:
+
+**Opção A - Via Swagger (durante desenvolvimento):**
+1. Executar o backend: `dotnet run`
+2. Acessar: `https://localhost:7185/swagger`
+3. Expandir `POST /api/User`
+4. Clicar em "Try it out"
+5. Preencher o body:
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+6. Clicar em "Execute"
+7. Resposta esperada: `"User created with success!"`
+
+**Opção B - Via Frontend (após criar a tela de cadastro):**
+1. Acessar `http://localhost:3000/register`
+2. Preencher usuário e senha
+3. Clicar em "Cadastrar"
+
+---
+
+### 🔑 Login e Autorização
+
+Após criar o usuário:
+
+1. **Fazer login** via `POST /api/Login`
+2. O backend retorna o **token JWT**
+3. Usar o token no **header Authorization** de todas as requisições protegidas:
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+#### No Swagger:
+1. Fazer login e copiar o token
+2. Clicar em **"Authorize"** (cadeado no topo)
+3. Digitar: `Bearer {seu_token_aqui}`
+4. Clicar em "Authorize"
+5. Agora todas as rotas protegidas funcionam
+
+---
+
+### 📋 Mapa Completo de Endpoints
+
+#### Endpoints Públicos (sem JWT):
+
+| Método | Rota         | Ação              | Body                     |
+| ------ | ------------ | ----------------- | ------------------------ |
+| `POST` | `/api/User`  | Cadastrar usuário | `{ username, password }` |
+| `POST` | `/api/Login` | Fazer login       | `{ username, password }` |
+
+#### Endpoints Protegidos (com JWT):
+
+| Método   | Rota                 | Ação                     | Body                             |
+| -------- | -------------------- | ------------------------ | -------------------------------- |
+| `GET`    | `/api/User/{id}`     | Buscar usuário por ID    | -                                |
+| `PUT`    | `/api/User/{id}`     | Atualizar usuário        | `{ username, password }`         |
+| `DELETE` | `/api/User/{id}`     | Deletar usuário          | -                                |
+| `GET`    | `/api/User/get-all`  | Listar todos os usuários | -                                |
+| `POST`   | `/api/Movie`         | Criar filme              | `{ title, posterUrl, overview }` |
+| `GET`    | `/api/Movie/{id}`    | Buscar filme por ID      | -                                |
+| `PUT`    | `/api/Movie/{id}`    | Atualizar filme          | `{ title, posterUrl, overview }` |
+| `DELETE` | `/api/Movie/{id}`    | Deletar filme            | -                                |
+| `GET`    | `/api/Movie/get-all` | Listar todos os filmes   | -                                |
+
+#### Fluxo Completo de Autenticação:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  1. CADASTRO (público)                              │
+│     POST /api/User  { username, password }          │
+│     → "User created with success!"                  │
+├─────────────────────────────────────────────────────┤
+│  2. LOGIN (público)                                 │
+│     POST /api/Login  { username, password }         │
+│     → "Login successfull! Jwt: eyJhbGci..."         │
+├─────────────────────────────────────────────────────┤
+│  3. USAR TOKEN (protegido)                          │
+│     GET /api/Movie/get-all                          │
+│     Header: Authorization: Bearer eyJhbGci...       │
+│     → [ { id, title, posterUrl, overview }, ... ]   │
+└─────────────────────────────────────────────────────┘
+```
+
+---
 
 ### Passo 5: Confiar no certificado HTTPS
 ```bash
@@ -215,7 +583,7 @@ Now listening on: https://localhost:7185
 
 ---
 
-## 7. Resolvendo Problemas Comuns
+## 8. Resolvendo Problemas Comuns
 
 ### ❌ Erro: "node não é reconhecido como comando"
 **Solução:** Reinicie o computador após instalar o Node.js
@@ -256,20 +624,19 @@ Nesta parte você vai criar o frontend Vue.js passo a passo.
 
 ## Índice da Parte 2
 
-1. [Criando a Pasta do Frontend](#1-criando-a-pasta-do-frontend)
-2. [Criando o package.json](#2-criando-o-packagejson)
-3. [Instalando as Dependências](#3-instalando-as-dependências)
-4. [Estrutura de Pastas](#4-estrutura-de-pastas)
-5. [Criando o index.html](#5-criando-o-indexhtml)
-6. [Criando o vite.config.js](#6-criando-o-viteconfigjs)
-7. [Criando o main.js](#7-criando-o-mainjs)
-8. [Criando o api.js](#8-criando-o-apijs)
-9. [Criando o Store (Vuex)](#9-criando-o-store-vuex)
-10. [Criando o Router](#10-criando-o-router)
-11. [Criando os Componentes](#11-criando-os-componentes)
-12. [Criando as Páginas](#12-criando-as-páginas)
-13. [Criando o App.vue](#13-criando-o-appvue)
-14. [Executando o Projeto](#14-executando-o-projeto)
+1. [Criando o Projeto com Vite](#1-criando-a-pasta-do-frontend)
+2. [Atualizando o package.json](#2-atualizando-o-packagejson)
+3. [Estrutura de Pastas](#3-estrutura-de-pastas)
+4. [Criando o index.html](#4-criando-o-indexhtml)
+5. [Criando o vite.config.js](#5-criando-o-viteconfigjs)
+6. [Criando o main.js](#6-criando-o-mainjs)
+7. [Criando o api.js](#7-criando-o-apijs)
+8. [Criando o Store (Vuex)](#8-criando-o-store-vuex)
+9. [Criando o Router](#9-criando-o-router)
+10. [Criando os Componentes](#10-criando-os-componentes)
+11. [Criando as Páginas](#11-criando-as-páginas)
+12. [Criando o App.vue](#12-criando-o-appvue)
+13. [Executando o Projeto](#13-executando-o-projeto)
 
 ---
 
@@ -283,19 +650,54 @@ Nesta parte você vai criar o frontend Vue.js passo a passo.
 cd C:\Users\SeuNome\Documents\Movies.API
 ```
 
-### Passo 2: Criar a Pasta
+### Passo 2: Criar o Projeto com Vite
+Execute o comando abaixo para criar um novo projeto Vue.js com Vite:
+
 ```bash
-mkdir frontend
+npm create vite@latest frontend -- --template vue
+```
+
+Quando perguntar, responda:
+- **Select a framework:** Vue
+- **Select a variant:** JavaScript
+
+### Passo 3: Entrar na Pasta
+```bash
 cd frontend
+```
+
+### Passo 4: Instalar Dependências Adicionais
+Instale as bibliotecas necessárias para o projeto:
+
+```bash
+npm install vue-router@4 vuex@4 vuetify@3 @mdi/font axios
+```
+
+```bash
+npm install -D sass
+```
+
+### Passo 5: Limpar Arquivos Desnecessários
+O Vite cria alguns arquivos de exemplo. Vamos removê-los:
+
+```bash
+rm -rf src/components/HelloWorld.vue
+rm -rf src/assets/vue.svg
+rm -rf public/vite.svg
+```
+
+No Windows (CMD), use:
+```cmd
+del src\components\HelloWorld.vue
+del src\assets\vue.svg
+del public\vite.svg
 ```
 
 ---
 
-## 2. Criando o package.json
+## 2. Atualizando o package.json
 
-O `package.json` define o projeto e suas dependências.
-
-### Criar arquivo `frontend/package.json`:
+Após instalar as dependências, seu `package.json` deve ficar assim:
 
 ```json
 {
@@ -324,6 +726,8 @@ O `package.json` define o projeto e suas dependências.
 }
 ```
 
+> ⚠️ **Nota:** As versões podem variar ligeiramente dependendo de quando você instalar.
+
 ### O que cada dependência faz:
 
 | Dependência          | Função                                |
@@ -340,23 +744,9 @@ O `package.json` define o projeto e suas dependências.
 
 ---
 
-## 3. Instalando as Dependências
+## 3. Estrutura de Pastas
 
-No terminal, dentro da pasta `frontend`:
-
-```bash
-npm install
-```
-
-Aguarde o download terminar. Uma pasta `node_modules` será criada.
-
-✅ **Dependências instaladas!**
-
----
-
-## 4. Estrutura de Pastas
-
-Crie a seguinte estrutura dentro de `frontend/src`:
+O Vite já cria a estrutura básica. Agora crie as pastas adicionais:
 
 ```
 frontend/
@@ -373,10 +763,8 @@ frontend/
 └── vite.config.js       ← Configuração do Vite
 ```
 
-### Comandos para criar as pastas:
+### Comandos para criar as pastas adicionais:
 ```bash
-mkdir src
-mkdir src/components
 mkdir src/pages
 mkdir src/router
 mkdir src/store
@@ -384,7 +772,7 @@ mkdir src/store
 
 ---
 
-## 5. Criando o index.html
+## 4. Criando o index.html
 
 Este é o arquivo HTML base da aplicação.
 
@@ -412,7 +800,7 @@ Este é o arquivo HTML base da aplicação.
 
 ---
 
-## 6. Criando o vite.config.js
+## 5. Criando o vite.config.js
 
 Configuração do servidor de desenvolvimento.
 
@@ -465,7 +853,7 @@ O proxy resolve o problema de CORS (bloqueio de segurança do navegador).
 
 ---
 
-## 7. Criando o main.js
+## 6. Criando o main.js
 
 Ponto de entrada da aplicação Vue.
 
@@ -506,7 +894,7 @@ createApp(App).use(vuetify).use(store).use(router).mount("#app");
 
 ---
 
-## 8. Criando o api.js
+## 7. Criando o api.js
 
 Centraliza todas as chamadas HTTP ao backend.
 
@@ -569,7 +957,7 @@ export async function login(username, password) {
 }
 
 export async function register(username, password) {
-  const response = await api.post("/User/register", { username, password });
+  const response = await api.post("/User", { username, password });
   return response.data;
 }
 
@@ -609,7 +997,7 @@ export function isLoggedIn() {
 
 ---
 
-## 9. Criando o Store (Vuex)
+## 8. Criando o Store (Vuex)
 
 O Vuex gerencia o estado global da aplicação.
 
@@ -729,7 +1117,7 @@ Componente → dispatch(action) → commit(mutation) → altera state → getter
 
 ---
 
-## 10. Criando o Router
+## 9. Criando o Router
 
 O Vue Router gerencia a navegação entre páginas.
 
@@ -793,7 +1181,7 @@ export default router;
 
 ---
 
-## 11. Criando os Componentes
+## 10. Criando os Componentes
 
 Componentes são blocos reutilizáveis de código.
 
@@ -1056,7 +1444,7 @@ export default {
 
 ---
 
-## 12. Criando as Páginas
+## 11. Criando as Páginas
 
 Páginas são componentes que representam telas inteiras.
 
@@ -1618,7 +2006,7 @@ export default {
 
 ---
 
-## 13. Criando o App.vue
+## 12. Criando o App.vue
 
 O App.vue é o componente raiz que contém toda a aplicação.
 
@@ -1696,7 +2084,7 @@ App.vue
 
 ---
 
-## 14. Executando o Projeto
+## 13. Executando o Projeto
 
 ### Passo 1: Verificar se o Backend está rodando
 Em um terminal, dentro de `Movies.API`:

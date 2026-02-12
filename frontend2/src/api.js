@@ -54,6 +54,8 @@ export async function login(username, password) {
 }
 
 export async function register(username, password) {
+  // Endpoint correto: POST /api/User
+  // NOTA: Este endpoint requer autenticação no backend atual
   const response = await api.post("/User", { username, password });
   return response.data;
 }
