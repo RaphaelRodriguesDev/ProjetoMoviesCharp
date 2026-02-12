@@ -339,15 +339,15 @@ O backend utiliza **JWT (JSON Web Token)** para proteger os endpoints.
 }
 ```
 
-| Campo             | Função                                          |
-| ----------------- | ----------------------------------------------- |
-| `Key`             | Chave secreta para assinar o token JWT           |
-| `Issuer`          | Quem emitiu o token (backend)                    |
-| `Audience`        | Para quem o token é válido (frontend)            |
-| `DurationMinutes` | Tempo de validade do token (60 min)              |
-| `SiteKey`         | Chave pública do reCAPTCHA v3 (usada no frontend)|
-| `SecretKey`       | Chave secreta do reCAPTCHA v3 (usada no backend) |
-| `MinScore`        | Score mínimo para considerar humano (0.0 a 1.0)  |
+| Campo             | Função                                            |
+| ----------------- | ------------------------------------------------- |
+| `Key`             | Chave secreta para assinar o token JWT            |
+| `Issuer`          | Quem emitiu o token (backend)                     |
+| `Audience`        | Para quem o token é válido (frontend)             |
+| `DurationMinutes` | Tempo de validade do token (60 min)               |
+| `SiteKey`         | Chave pública do reCAPTCHA v3 (usada no frontend) |
+| `SecretKey`       | Chave secreta do reCAPTCHA v3 (usada no backend)  |
+| `MinScore`        | Score mínimo para considerar humano (0.0 a 1.0)   |
 
 #### Configuração no Program.cs (.NET 8.0):
 
@@ -517,10 +517,10 @@ O reCAPTCHA v3 é um serviço do Google que protege o site contra bots **de form
 
 #### Onde colocar as chaves:
 
-| Chave        | Onde usar                                                          |
-| ------------ | ------------------------------------------------------------------ |
-| **Site Key** | `frontend/index.html` (no `?render=`) e `frontend/src/api.js` (na constante `RECAPTCHA_SITE_KEY`) |
-| **Secret Key** | `Movies.API/appsettings.json` (em `RecaptchaSettings:SecretKey`) |
+| Chave          | Onde usar                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| **Site Key**   | `frontend/index.html` (no `?render=`) e `frontend/src/api.js` (na constante `RECAPTCHA_SITE_KEY`) |
+| **Secret Key** | `Movies.API/appsettings.json` (em `RecaptchaSettings:SecretKey`)                                  |
 
 #### Passo 2: Configurar no appsettings.json
 
@@ -599,15 +599,15 @@ public class RecaptchaResponse
 }
 ```
 
-| Campo              | Função                                                             |
-| ------------------ | ------------------------------------------------------------------ |
-| `ValidateToken`    | Retorna tupla `(bool, string)` — se é válido e o motivo da falha   |
-| `expectedAction`   | Action esperada ("login" ou "register") para evitar roubo de token  |
-| `CultureInfo.InvariantCulture` | Garante que `0.5` é lido corretamente no Windows pt-BR  |
-| `FormUrlEncodedContent` | Envia os dados via POST body (recomendado pelo Google)         |
-| `success`          | Se a verificação foi bem-sucedida                                  |
-| `score`            | Score de 0.0 (bot) a 1.0 (humano)                                 |
-| `action`           | A action que o frontend informou ao gerar o token                  |
+| Campo                          | Função                                                             |
+| ------------------------------ | ------------------------------------------------------------------ |
+| `ValidateToken`                | Retorna tupla `(bool, string)` — se é válido e o motivo da falha   |
+| `expectedAction`               | Action esperada ("login" ou "register") para evitar roubo de token |
+| `CultureInfo.InvariantCulture` | Garante que `0.5` é lido corretamente no Windows pt-BR             |
+| `FormUrlEncodedContent`        | Envia os dados via POST body (recomendado pelo Google)             |
+| `success`                      | Se a verificação foi bem-sucedida                                  |
+| `score`                        | Score de 0.0 (bot) a 1.0 (humano)                                  |
+| `action`                       | A action que o frontend informou ao gerar o token                  |
 
 > ⚠️ **Atenção Windows pt-BR:** Sem `CultureInfo.InvariantCulture`, o `double.Parse("0.5")` interpreta como **5** (vírgula é o separador decimal no Brasil). Isso faria o score 0.9 ser menor que 5, rejeitando todos os usuários!
 
@@ -703,11 +703,11 @@ Se precisar trocar as chaves (ex: perdeu a secret key, mudou de projeto, deploy 
 3. Copie as novas chaves
 4. Substitua nos **3 arquivos**:
 
-| Arquivo | O que trocar |
-|---------|-------------|
-| `frontend/index.html` | `?render=SUA_SITE_KEY` na tag `<script>` |
-| `frontend/src/api.js` | Constante `RECAPTCHA_SITE_KEY = "SUA_SITE_KEY"` |
-| `Movies.API/appsettings.json` | Campo `"SecretKey": "SUA_SECRET_KEY"` |
+| Arquivo                       | O que trocar                                    |
+| ----------------------------- | ----------------------------------------------- |
+| `frontend/index.html`         | `?render=SUA_SITE_KEY` na tag `<script>`        |
+| `frontend/src/api.js`         | Constante `RECAPTCHA_SITE_KEY = "SUA_SITE_KEY"` |
+| `Movies.API/appsettings.json` | Campo `"SecretKey": "SUA_SECRET_KEY"`           |
 
 5. Reinicie o backend e o frontend
 
@@ -772,10 +772,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 #### Endpoints Públicos (sem JWT, com reCAPTCHA):
 
-| Método | Rota         | Ação              | Body                                        |
-| ------ | ------------ | ----------------- | ------------------------------------------- |
-| `POST` | `/api/User`  | Cadastrar usuário | `{ username, password, recaptchaToken }`     |
-| `POST` | `/api/Login` | Fazer login       | `{ username, password, recaptchaToken }`     |
+| Método | Rota         | Ação              | Body                                     |
+| ------ | ------------ | ----------------- | ---------------------------------------- |
+| `POST` | `/api/User`  | Cadastrar usuário | `{ username, password, recaptchaToken }` |
+| `POST` | `/api/Login` | Fazer login       | `{ username, password, recaptchaToken }` |
 
 > O `recaptchaToken` é gerado automaticamente pelo frontend (reCAPTCHA v3 invisível).
 

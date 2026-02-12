@@ -59,7 +59,8 @@ export default createStore({
         await api.register(username, password, recaptchaToken);
         return { success: true };
       } catch (error) {
-        const msg = error.response?.data || "Erro ao cadastrar. Username já existe.";
+        const msg =
+          error.response?.data || "Erro ao cadastrar. Username já existe.";
         return { success: false, message: msg };
       }
     },
