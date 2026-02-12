@@ -16,10 +16,15 @@ public class UserController : ControllerBase
 {
     [AllowAnonymous]
     [HttpPost]
-    public IActionResult Create(
+    public async Task<IActionResult> Create(
         [FromBody] UserCreateRequest request
         )
     {
+        // Valida reCAPTCHA antes de criar o usuário
+        var (isHuman, reason) = await Services.RecaptchaService.ValidateToken(request.RecaptchaToken, "register");
+        if (!isHuman)
+            return BadRequest($"reCAPTCHA failed: {reason}");
+
         var userService = new UserService();
 
         var isCreated = userService.Create(request);

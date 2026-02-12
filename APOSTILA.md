@@ -323,21 +323,31 @@ O backend utiliza **JWT (JSON Web Token)** para proteger os endpoints.
   "ConnectionStrings": {
     "DefaultConnection": "Host=127.0.0.1;Port=5433;Database=movies;Username=postgres;Password=123456"
   },
+
   "JwtSettings": {
     "Key": "YourStrongSecretKeyHere1234567890",
     "Issuer": "YourAppIssuer",
     "Audience": "YourAppAudience",
     "DurationMinutes": 60
+  },
+
+  "RecaptchaSettings": {
+    "SiteKey": "COLE_SUA_SITE_KEY_AQUI",
+    "SecretKey": "COLE_SUA_SECRET_KEY_AQUI",
+    "MinScore": 0.5
   }
 }
 ```
 
-| Campo             | Função                                |
-| ----------------- | ------------------------------------- |
-| `Key`             | Chave secreta para assinar o token    |
-| `Issuer`          | Quem emitiu o token (backend)         |
-| `Audience`        | Para quem o token é válido (frontend) |
-| `DurationMinutes` | Tempo de validade do token (60 min)   |
+| Campo             | Função                                          |
+| ----------------- | ----------------------------------------------- |
+| `Key`             | Chave secreta para assinar o token JWT           |
+| `Issuer`          | Quem emitiu o token (backend)                    |
+| `Audience`        | Para quem o token é válido (frontend)            |
+| `DurationMinutes` | Tempo de validade do token (60 min)              |
+| `SiteKey`         | Chave pública do reCAPTCHA v3 (usada no frontend)|
+| `SecretKey`       | Chave secreta do reCAPTCHA v3 (usada no backend) |
+| `MinScore`        | Score mínimo para considerar humano (0.0 a 1.0)  |
 
 #### Configuração no Program.cs (.NET 8.0):
 
@@ -469,6 +479,242 @@ Por isso `[AllowAnonymous]` no `Create` é necessário e seguro:
 
 ---
 
+### 🛡️ Google reCAPTCHA v3 - Proteção contra Bots
+
+O reCAPTCHA v3 é um serviço do Google que protege o site contra bots **de forma invisível** (sem aqueles "clique nas imagens"). Ele analisa o comportamento do usuário e gera um **score de 0.0 a 1.0** — quanto mais próximo de 1.0, mais provável que seja um humano.
+
+#### Como funciona:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1. Frontend carrega o script do reCAPTCHA v3               │
+│  2. Antes de login/cadastro, pede um token ao Google        │
+│  3. Token é enviado junto com username/password ao backend  │
+│  4. Backend valida o token com a API do Google              │
+│  5. Google retorna { success, score, action }               │
+│  6. Se score >= 0.5 e action confere → humano ✅            │
+│  7. Se score < 0.5 ou action errada → bot bloqueado ❌      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Passo 1: Obter as chaves no Google reCAPTCHA Admin
+
+1. Acesse: https://www.google.com/recaptcha/admin
+2. Faça login com sua conta Google
+3. Clique em **"+"** (ou **"Create"**) para criar um novo site
+4. Preencha:
+   - **Etiqueta (Label)**: `moviesAPI` (ou qualquer nome)
+   - **Tipo de reCAPTCHA**: **Com base em pontuação (v3)**
+   - **Domínios**: adicione `localhost` e `127.0.0.1` (um por vez, pressione Enter)
+5. Em **Google Cloud Platform**, selecione ou crie um projeto
+6. Marque **"Concordo com os Termos de Serviço"**
+7. Clique em **ENVIAR**
+8. Na próxima tela, copie:
+   - **Chave do site (Site Key)** → vai no frontend (`index.html` e `api.js`)
+   - **Chave secreta (Secret Key)** → vai no backend (`appsettings.json`)
+
+> ⚠️ **Importante:** Adicione `localhost` E `127.0.0.1` nos domínios para funcionar em desenvolvimento local.
+
+#### Onde colocar as chaves:
+
+| Chave        | Onde usar                                                          |
+| ------------ | ------------------------------------------------------------------ |
+| **Site Key** | `frontend/index.html` (no `?render=`) e `frontend/src/api.js` (na constante `RECAPTCHA_SITE_KEY`) |
+| **Secret Key** | `Movies.API/appsettings.json` (em `RecaptchaSettings:SecretKey`) |
+
+#### Passo 2: Configurar no appsettings.json
+
+Substitua os placeholders pelas chaves reais:
+```json
+"RecaptchaSettings": {
+  "SiteKey": "6Lxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "SecretKey": "6Lxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "MinScore": 0.5
+}
+```
+
+#### Passo 3: Criar o RecaptchaService.cs
+
+Este serviço valida o token reCAPTCHA com a API do Google.
+
+##### Criar arquivo `Movies.API/Services/RecaptchaService.cs`:
+
+```csharp
+using System.Globalization;
+using System.Text.Json;
+
+namespace Movies.API.Services;
+
+public static class RecaptchaService
+{
+    private static readonly HttpClient _httpClient = new();
+
+    public static async Task<(bool isValid, string reason)> ValidateToken(string token, string expectedAction)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            return (false, "Token vazio ou nulo");
+
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+        var secretKey = configuration.GetSection("RecaptchaSettings:SecretKey").Value;
+        var minScore = double.Parse(
+            configuration.GetSection("RecaptchaSettings:MinScore").Value ?? "0.5",
+            CultureInfo.InvariantCulture
+        );
+
+        if (string.IsNullOrEmpty(secretKey))
+            return (false, "SecretKey não configurada");
+
+        // Envia como form-encoded (recomendado pelo Google)
+        var content = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("secret", secretKey),
+            new KeyValuePair<string, string>("response", token)
+        });
+
+        var response = await _httpClient.PostAsync("https://www.google.com/recaptcha/api/siteverify", content);
+        var json = await response.Content.ReadAsStringAsync();
+
+        var result = JsonSerializer.Deserialize<RecaptchaResponse>(json);
+
+        if (result == null) return (false, $"Resposta nula. JSON: {json}");
+        if (!result.success) return (false, $"success=false. JSON: {json}");
+        if (result.score < minScore) return (false, $"score={result.score} < {minScore}");
+        if (result.action != expectedAction) return (false, $"action='{result.action}' != '{expectedAction}'");
+
+        return (true, "OK");
+    }
+}
+
+public class RecaptchaResponse
+{
+    public bool success { get; set; }
+    public double score { get; set; }
+    public string action { get; set; } = string.Empty;
+    public string challenge_ts { get; set; } = string.Empty;
+    public string hostname { get; set; } = string.Empty;
+}
+```
+
+| Campo              | Função                                                             |
+| ------------------ | ------------------------------------------------------------------ |
+| `ValidateToken`    | Retorna tupla `(bool, string)` — se é válido e o motivo da falha   |
+| `expectedAction`   | Action esperada ("login" ou "register") para evitar roubo de token  |
+| `CultureInfo.InvariantCulture` | Garante que `0.5` é lido corretamente no Windows pt-BR  |
+| `FormUrlEncodedContent` | Envia os dados via POST body (recomendado pelo Google)         |
+| `success`          | Se a verificação foi bem-sucedida                                  |
+| `score`            | Score de 0.0 (bot) a 1.0 (humano)                                 |
+| `action`           | A action que o frontend informou ao gerar o token                  |
+
+> ⚠️ **Atenção Windows pt-BR:** Sem `CultureInfo.InvariantCulture`, o `double.Parse("0.5")` interpreta como **5** (vírgula é o separador decimal no Brasil). Isso faria o score 0.9 ser menor que 5, rejeitando todos os usuários!
+
+#### Passo 4: Adicionar RecaptchaToken nos Request Models
+
+##### Arquivo `Movies.API/Request/Users/UserCreateRequest.cs`:
+
+```csharp
+namespace Movies.API.Request.Users;
+
+public class UserCreateRequest
+{
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string RecaptchaToken { get; set; } = string.Empty;
+}
+```
+
+##### Arquivo `Movies.API/Request/Authentication/AuthRequest.cs`:
+
+```csharp
+namespace Movies.API.Request.Login;
+
+public class AuthRequest
+{
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string RecaptchaToken { get; set; } = string.Empty;
+}
+```
+
+> O campo `RecaptchaToken` é enviado pelo frontend junto com `username` e `password`.
+
+#### Passo 5: Validar reCAPTCHA nos Controllers
+
+##### No `UserController.cs` (método Create):
+
+```csharp
+[AllowAnonymous]
+[HttpPost]
+public async Task<IActionResult> Create(
+    [FromBody] UserCreateRequest request
+    )
+{
+    // Valida reCAPTCHA antes de criar o usuário
+    var (isHuman, reason) = await Services.RecaptchaService.ValidateToken(request.RecaptchaToken, "register");
+    if (!isHuman)
+        return BadRequest($"reCAPTCHA failed: {reason}");
+
+    var userService = new UserService();
+
+    var isCreated = userService.Create(request);
+    if (!isCreated)
+        return BadRequest("Error to create user!");
+
+    return Ok("User created with success!");
+}
+```
+
+##### No `LoginController.cs` (método Login):
+
+```csharp
+[HttpPost]
+public async Task<IActionResult> Login([FromBody] AuthRequest request)
+{
+    // Valida reCAPTCHA antes de autenticar
+    var (isHuman, reason) = await Services.RecaptchaService.ValidateToken(request.RecaptchaToken, "login");
+    if (!isHuman)
+        return BadRequest($"reCAPTCHA failed: {reason}");
+
+    using var connection = new DataContext();
+
+    var user = connection.Users.AsNoTracking().FirstOrDefault(x => x.Username == request.Username && x.Password == PasswordEncryptor.EncryptPassword(request.Password));
+
+    if (user is null)
+        return BadRequest("Login failed!");
+
+    var token = JwtAuthManager.GenerateToken(user.Username);
+
+    return Ok($"Login successfull! Jwt: {token}");
+}
+```
+
+> **Importante:** Os métodos foram alterados de `IActionResult` para `async Task<IActionResult>` porque a validação do reCAPTCHA é assíncrona (chama a API do Google).
+> A tupla `(isHuman, reason)` permite retornar a **causa exata** da falha, facilitando o debug.
+
+#### Passo 6: Como trocar as chaves do reCAPTCHA
+
+Se precisar trocar as chaves (ex: perdeu a secret key, mudou de projeto, deploy em produção):
+
+1. Acesse https://www.google.com/recaptcha/admin
+2. Selecione o site existente ou crie um novo
+3. Copie as novas chaves
+4. Substitua nos **3 arquivos**:
+
+| Arquivo | O que trocar |
+|---------|-------------|
+| `frontend/index.html` | `?render=SUA_SITE_KEY` na tag `<script>` |
+| `frontend/src/api.js` | Constante `RECAPTCHA_SITE_KEY = "SUA_SITE_KEY"` |
+| `Movies.API/appsettings.json` | Campo `"SecretKey": "SUA_SECRET_KEY"` |
+
+5. Reinicie o backend e o frontend
+
+> **Dica:** Para produção, adicione o domínio real (ex: `meusite.com.br`) na lista de domínios do Google reCAPTCHA Admin. Se o domínio não estiver na lista, o reCAPTCHA retorna `success=false`.
+
+---
+
 ### 👤 Criando o Primeiro Usuário (Administrador)
 
 > ⚠️ **Regra de Arquitetura (Muito Importante):**  
@@ -486,11 +732,14 @@ Por isso `[AllowAnonymous]` no `Create` é necessário e seguro:
 ```json
 {
   "username": "admin",
-  "password": "admin123"
+  "password": "admin123",
+  "recaptchaToken": ""
 }
 ```
 6. Clicar em "Execute"
 7. Resposta esperada: `"User created with success!"`
+
+> ⚠️ **Nota:** Pelo Swagger, o `recaptchaToken` pode ser enviado vazio durante o desenvolvimento. Para funcionar com reCAPTCHA ativo, use o frontend.
 
 **Opção B - Via Frontend (após criar a tela de cadastro):**
 1. Acessar `http://localhost:3000/register`
@@ -521,12 +770,14 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 📋 Mapa Completo de Endpoints
 
-#### Endpoints Públicos (sem JWT):
+#### Endpoints Públicos (sem JWT, com reCAPTCHA):
 
-| Método | Rota         | Ação              | Body                     |
-| ------ | ------------ | ----------------- | ------------------------ |
-| `POST` | `/api/User`  | Cadastrar usuário | `{ username, password }` |
-| `POST` | `/api/Login` | Fazer login       | `{ username, password }` |
+| Método | Rota         | Ação              | Body                                        |
+| ------ | ------------ | ----------------- | ------------------------------------------- |
+| `POST` | `/api/User`  | Cadastrar usuário | `{ username, password, recaptchaToken }`     |
+| `POST` | `/api/Login` | Fazer login       | `{ username, password, recaptchaToken }`     |
+
+> O `recaptchaToken` é gerado automaticamente pelo frontend (reCAPTCHA v3 invisível).
 
 #### Endpoints Protegidos (com JWT):
 
@@ -542,23 +793,27 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | `DELETE` | `/api/Movie/{id}`    | Deletar filme            | -                                |
 | `GET`    | `/api/Movie/get-all` | Listar todos os filmes   | -                                |
 
-#### Fluxo Completo de Autenticação:
+#### Fluxo Completo de Autenticação (com reCAPTCHA):
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  1. CADASTRO (público)                              │
-│     POST /api/User  { username, password }          │
-│     → "User created with success!"                  │
-├─────────────────────────────────────────────────────┤
-│  2. LOGIN (público)                                 │
-│     POST /api/Login  { username, password }         │
-│     → "Login successfull! Jwt: eyJhbGci..."         │
-├─────────────────────────────────────────────────────┤
-│  3. USAR TOKEN (protegido)                          │
-│     GET /api/Movie/get-all                          │
-│     Header: Authorization: Bearer eyJhbGci...       │
-│     → [ { id, title, posterUrl, overview }, ... ]   │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  1. CADASTRO (público + reCAPTCHA)                           │
+│     Frontend pede token reCAPTCHA ao Google (action=register)│
+│     POST /api/User  { username, password, recaptchaToken }   │
+│     Backend valida reCAPTCHA → se OK → cria usuário          │
+│     → "User created with success!"                           │
+├──────────────────────────────────────────────────────────────┤
+│  2. LOGIN (público + reCAPTCHA)                              │
+│     Frontend pede token reCAPTCHA ao Google (action=login)   │
+│     POST /api/Login  { username, password, recaptchaToken }  │
+│     Backend valida reCAPTCHA → se OK → gera JWT              │
+│     → "Login successfull! Jwt: eyJhbGci..."                  │
+├──────────────────────────────────────────────────────────────┤
+│  3. USAR TOKEN (protegido por JWT)                           │
+│     GET /api/Movie/get-all                                   │
+│     Header: Authorization: Bearer eyJhbGci...                │
+│     → [ { id, title, posterUrl, overview }, ... ]            │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -786,6 +1041,7 @@ Este é o arquivo HTML base da aplicação.
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Movies App - Vue 3</title>
+    <script src="https://www.google.com/recaptcha/api.js?render=COLE_SUA_SITE_KEY_AQUI"></script>
   </head>
   <body>
     <div id="app"></div>
@@ -797,6 +1053,9 @@ Este é o arquivo HTML base da aplicação.
 ### Explicação:
 - `<div id="app">`: Onde o Vue vai renderizar a aplicação
 - `<script src="/src/main.js">`: Carrega o código Vue
+- `<script src="...recaptcha/api.js?render=...">`: Carrega o reCAPTCHA v3 do Google (invisível)
+
+> ⚠️ **Substitua** `COLE_SUA_SITE_KEY_AQUI` pela sua **Site Key** real do Google reCAPTCHA v3
 
 ---
 
@@ -951,14 +1210,37 @@ export async function deleteMovie(id) {
 
 // ========== LOGIN / USUÁRIO ==========
 
-export async function login(username, password) {
-  const response = await api.post("/Login", { username, password });
+export async function login(username, password, recaptchaToken) {
+  const response = await api.post("/Login", { username, password, recaptchaToken });
   return response.data;
 }
 
-export async function register(username, password) {
-  const response = await api.post("/User", { username, password });
+export async function register(username, password, recaptchaToken) {
+  const response = await api.post("/User", { username, password, recaptchaToken });
   return response.data;
+}
+
+// ========== reCAPTCHA v3 ==========
+
+const RECAPTCHA_SITE_KEY = "COLE_SUA_SITE_KEY_AQUI";
+
+export function getRecaptchaToken(action) {
+  return new Promise((resolve, reject) => {
+    // Timeout de 5s para não travar se reCAPTCHA não carregar
+    const timeout = setTimeout(() => reject(new Error("reCAPTCHA timeout")), 5000);
+
+    if (!window.grecaptcha) {
+      clearTimeout(timeout);
+      return reject(new Error("reCAPTCHA não carregado"));
+    }
+
+    window.grecaptcha.ready(() => {
+      window.grecaptcha
+        .execute(RECAPTCHA_SITE_KEY, { action })
+        .then(token => { clearTimeout(timeout); resolve(token); })
+        .catch(err => { clearTimeout(timeout); reject(err); });
+    });
+  });
 }
 
 export function saveToken(token) {
@@ -1043,7 +1325,9 @@ export default createStore({
   actions: {
     async login({ commit }, { username, password }) {
       try {
-        const token = await api.login(username, password);
+        // Obtém token reCAPTCHA v3 (action "login")
+        const recaptchaToken = await api.getRecaptchaToken("login");
+        const token = await api.login(username, password, recaptchaToken);
         api.saveToken(token);
         // Salva o username que foi usado no login
         api.saveUsername(username);
@@ -1051,16 +1335,20 @@ export default createStore({
         commit("SET_USERNAME", username);
         return { success: true };
       } catch (error) {
-        return { success: false, message: "Usuário ou senha inválidos" };
+        const msg = error.response?.data || "Usuário ou senha inválidos";
+        return { success: false, message: msg };
       }
     },
 
     async register(_, { username, password }) {
       try {
-        await api.register(username, password);
+        // Obtém token reCAPTCHA v3 (action "register")
+        const recaptchaToken = await api.getRecaptchaToken("register");
+        await api.register(username, password, recaptchaToken);
         return { success: true };
       } catch (error) {
-        return { success: false, message: "Erro ao cadastrar. Username já existe." };
+        const msg = error.response?.data || "Erro ao cadastrar. Username já existe.";
+        return { success: false, message: msg };
       }
     },
 

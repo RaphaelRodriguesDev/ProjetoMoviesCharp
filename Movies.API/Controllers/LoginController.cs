@@ -12,8 +12,13 @@ namespace Movies.API.Controllers;
 public class LoginController : ControllerBase
 {
     [HttpPost]
-    public IActionResult Login([FromBody] AuthRequest request)
+    public async Task<IActionResult> Login([FromBody] AuthRequest request)
     {
+        // Valida reCAPTCHA antes de autenticar
+        var (isHuman, reason) = await Services.RecaptchaService.ValidateToken(request.RecaptchaToken, "login");
+        if (!isHuman)
+            return BadRequest($"reCAPTCHA failed: {reason}");
+
         using var connection = new DataContext();
 
         var user = connection.Users.AsNoTracking().FirstOrDefault(x => x.Username == request.Username && x.Password == PasswordEncryptor.EncryptPassword(request.Password));

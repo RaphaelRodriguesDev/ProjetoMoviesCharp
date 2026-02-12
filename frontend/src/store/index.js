@@ -37,7 +37,9 @@ export default createStore({
   actions: {
     async login({ commit }, { username, password }) {
       try {
-        const token = await api.login(username, password);
+        // Obtém token reCAPTCHA v3 (action "login")
+        const recaptchaToken = await api.getRecaptchaToken("login");
+        const token = await api.login(username, password, recaptchaToken);
         api.saveToken(token);
         // Salva o username que foi usado no login
         api.saveUsername(username);
@@ -45,19 +47,20 @@ export default createStore({
         commit("SET_USERNAME", username);
         return { success: true };
       } catch (error) {
-        return { success: false, message: "Usuário ou senha inválidos" };
+        const msg = error.response?.data || "Usuário ou senha inválidos";
+        return { success: false, message: msg };
       }
     },
 
     async register(_, { username, password }) {
       try {
-        await api.register(username, password);
+        // Obtém token reCAPTCHA v3 (action "register")
+        const recaptchaToken = await api.getRecaptchaToken("register");
+        await api.register(username, password, recaptchaToken);
         return { success: true };
       } catch (error) {
-        return {
-          success: false,
-          message: "Erro ao cadastrar. Username já existe.",
-        };
+        const msg = error.response?.data || "Erro ao cadastrar. Username já existe.";
+        return { success: false, message: msg };
       }
     },
 
