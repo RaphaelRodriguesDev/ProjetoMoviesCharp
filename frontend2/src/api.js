@@ -48,16 +48,54 @@ export async function deleteMovie(id) {
 
 // ========== LOGIN / USUÁRIO ==========
 
-export async function login(username, password) {
-  const response = await api.post("/Login", { username, password });
+export async function login(username, password, recaptchaToken) {
+  const response = await api.post("/Login", {
+    username,
+    password,
+    recaptchaToken,
+  });
   return response.data;
 }
 
-export async function register(username, password) {
-  // Endpoint correto: POST /api/User
-  // NOTA: Este endpoint requer autenticação no backend atual
-  const response = await api.post("/User", { username, password });
+export async function register(username, password, recaptchaToken) {
+  const response = await api.post("/User", {
+    username,
+    password,
+    recaptchaToken,
+  });
   return response.data;
+}
+
+// ========== reCAPTCHA v3 ==========
+
+const RECAPTCHA_SITE_KEY = "6LdfkmksAAAAAHGq7ndQXlLQ6HcSprXUoSJ5GquJ";
+
+export function getRecaptchaToken(action) {
+  return new Promise((resolve, reject) => {
+    // Timeout de 5s para não travar se reCAPTCHA não carregar
+    const timeout = setTimeout(
+      () => reject(new Error("reCAPTCHA timeout")),
+      5000,
+    );
+
+    if (!window.grecaptcha) {
+      clearTimeout(timeout);
+      return reject(new Error("reCAPTCHA não carregado"));
+    }
+
+    window.grecaptcha.ready(() => {
+      window.grecaptcha
+        .execute(RECAPTCHA_SITE_KEY, { action })
+        .then(token => {
+          clearTimeout(timeout);
+          resolve(token);
+        })
+        .catch(err => {
+          clearTimeout(timeout);
+          reject(err);
+        });
+    });
+  });
 }
 
 export function saveToken(token) {

@@ -1,30 +1,53 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
+<!--
+  APP.VUE - Componente Principal (Raiz)
+  
+  CONCEITOS:
+  - <router-view>: renderiza a página atual da rota
+  - props: passando dados para componente filho (:is-logged-in, :username)
+  - eventos: ouvindo eventos do filho (@logout)
+  - computed: propriedades reativas
+  - methods: funções do componente
+-->
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <v-app>
+    <!-- Passando props e ouvindo eventos do componente filho -->
+    <!-- :is-logged-in = prop (pai -> filho) -->
+    <!-- :username = prop com nome do usuário -->
+    <!-- @logout = evento (filho -> pai) -->
+    <AppNavbar :is-logged-in="isLoggedIn" :username="username" @logout="logout" />
+
+    <!-- Conteúdo: renderiza a página atual -->
+    <v-main>
+      <router-view></router-view>
+    </v-main>
+  </v-app>
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<script>
+import AppNavbar from './components/AppNavbar.vue'
+
+export default {
+  name: 'App',
+  
+  // COMPONENTS: componentes usados
+  components: { AppNavbar },
+
+  // COMPUTED: propriedades reativas
+  computed: {
+    isLoggedIn() {
+      return this.$store.getters.isLoggedIn
+    },
+    username() {
+      return this.$store.getters.username
+    }
+  },
+
+  // METHODS: funções do componente
+  methods: {
+    logout() {
+      this.$store.dispatch('logout')
+      this.$router.push('/')
+    }
+  }
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
+</script>

@@ -1,3 +1,7 @@
 .vs/
 bin/
 obj/
+Movies.API/appsettings.json
+Movies.API/appsettings.Development.json
+./Movies.API/appsettings.json
+./Movies.API/appsettings.Development.json
