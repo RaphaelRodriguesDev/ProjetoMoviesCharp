@@ -1,0 +1,38 @@
+<script>
+  const mes = "Março";
+  let estacao;
+
+  switch (mes) {
+    case "Dezembro":
+    case "Janeiro":
+    case "Fevereiro":
+      estacao = "Verão";
+      break;
+
+    case "Março":
+    case "Abril":
+    case "Maio":
+      estacao = "Outono";
+      break;
+
+    case "Junho":
+    case "Julho":
+    case "Agosto":
+      estacao = "Inverno";
+      break;
+
+    case "Setembro":
+    case "Outubro":
+    case "Novembro":
+      estacao = "Primavera";
+      break;
+
+    default:
+      estacao = "Mês não reconhecido";
+  }
+
+  // Exibe o resultado com uma mensagem formatada
+  document.write(
+    `O mês de ${mes} está na estação: <strong>${estacao}</strong>`
+  );
+</script>

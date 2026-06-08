@@ -1,0 +1,19 @@
+<script>
+  // let cont = 6; // valor inicial
+  // do {
+  //   document.write("Contador: " + cont + "<br />");
+  //   cont++; // incremento
+  // } while(cont <= 5); // condição de parada
+
+  let resposta;
+
+  do {
+    resposta = prompt("Digite 'SIM' para continuar ou 'NÃO' para cancelar:")
+      .trim()
+      .toUpperCase();
+
+    if(resposta === "SIM") {
+      console.log("Você escolheu continuar.");
+    }
+  } while(resposta === "SIM");
+</script>

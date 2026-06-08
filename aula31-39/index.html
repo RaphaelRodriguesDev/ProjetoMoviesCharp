@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="Somente um site informativo para mostrar a importância do HTML para a construção de páginas web."
+    />
+    <meta
+      name="keywords"
+      content="HTML, site, página web, desenvolvimento web"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apenas um site</title>
+    <link
+      rel="shortcut icon"
+      href="./assets/img/favicon.ico"
+      type="image/x-icon"
+    />
+
+    <link rel="stylesheet" href="./src/css/style.css" />
+  </head>
+  <body>
+    <header id="cabecalho">
+      <div class="container">
+        <figure>
+          <a href="./index.html"
+            ><img
+              height="150"
+              width="150"
+              src="./assets/img/logo.png"
+              alt="Logo do site"
+          /></a>
+          <figcaption>Logo do site - RTECH</figcaption>
+        </figure>
+        <nav class="menu">
+          <ul>
+            <li><a href="./index.html">Home</a></li>
+            <li><a href="./view/sobre.html">Sobre</a></li>
+            <li><a href="./view/contato.html">Contato</a></li>
+            <li><a href="./view/servicos.html">Serviços</a></li>
+            <li><a href="./view/galeria.html">Galeria</a></li>
+          </ul>
+        </nav>
+        <section class="title">
+          <h1>Rtech - Cursos</h1>
+        </section>
+      </div>
+    </header>
+
+    <main id="principal">
+      <div class="container">
+        <figure class="banner">
+          <img
+            src="./assets/img/banner-rtech2.png"
+            alt="Banner RTech"
+            width="100%"
+          />
+          <figcaption>
+            Imagem gerada por
+            <a href="https://gemini.google.com" target="_blank">
+              Gemini (Google AI)
+            </a>
+          </figcaption>
+        </figure>
+        <section class="cards-highlight">
+          <article class="card">
+            <a href="">
+              <img src="./assets/img/img-card-01.jpg" alt="" />
+            </a>
+            <h2>Curso #1</h2>
+            <p>Descrição do curso #1</p>
+          </article>
+          <article class="card">
+            <a href="">
+              <img src="./assets/img/img-card-02.jpg" alt="" />
+            </a>
+            <h2>Curso #2</h2>
+            <p>Descrição do curso #2</p>
+          </article>
+          <article class="card">
+            <a href="">
+              <img src="./assets/img/img-card-03.jpg" alt="" />
+            </a>
+            <h2>Curso #3</h2>
+            <p>Descrição do curso #3</p>
+          </article>
+        </section>
+
+        <section class="table-main">
+          <table width="100%" border="1">
+            <thead>
+              <tr>
+                <th>coluna 1</th>
+                <th>coluna 2</th>
+                <th colspan="2">coluna 3</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td rowspan="2">rowspan</td>
+                <td>coluna 2</td>
+                <td>coluna 3</td>
+                <td>coluna 4</td>
+              </tr>
+              <tr>
+                <td>coluna 2</td>
+                <td>coluna 3</td>
+                <td>coluna 4</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+
+    <!-- Colocar id no footer -->
+    <footer id="rodape">
+      <div class="container">
+        <p>&copy; 2026 Rtech - Todos os direitos reservados.</p>
+      </div>
+    </footer>
+  </body>
+</html>

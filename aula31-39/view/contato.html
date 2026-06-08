@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="Somente um site informativo para mostrar a importância do HTML para a construção de páginas web."
+    />
+    <meta
+      name="keywords"
+      content="HTML, site, página web, desenvolvimento web"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apenas um site</title>
+    <link
+      rel="shortcut icon"
+      href="../assets/img/favicon.ico"
+      type="image/x-icon"
+    />
+
+    <!-- CSS Geral -->
+    <link rel="stylesheet" href="../src/css/style.css" />
+
+    <!-- CSS Contato -->
+    <link rel="stylesheet" href="../src/css/contact.css" />
+  </head>
+  <body>
+    <header id="cabecalho">
+      <div class="container">
+        <figure>
+          <a href="../index.html"
+            ><img
+              height="150"
+              width="150"
+              src="../assets/img/logo.png"
+              alt="Logo do site"
+          /></a>
+          <figcaption>Logo do site - RTECH</figcaption>
+        </figure>
+        <nav class="menu">
+          <ul>
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="./sobre.html">Sobre</a></li>
+            <li><a href="./contato.html">Contato</a></li>
+            <li><a href="./servicos.html">Serviços</a></li>
+            <li><a href="./galeria.html">Galeria</a></li>
+          </ul>
+        </nav>
+        <section class="title">
+          <h1>Rtech - Cursos</h1>
+        </section>
+      </div>
+    </header>
+
+    <main id="principal">
+      <div class="container">
+        <section class="contact">
+          <form id="contact-form" action="">
+            <fieldset>
+              <legend>Dados Pessoais</legend>
+              <div class="input-group">
+                <label for="name">Nome:</label>
+                <input type="text" name="name" id="name" />
+              </div>
+              <div class="input-group">
+                <label for="lastname">Sobrenome:</label>
+                <input type="text" name="lastname" id="lastname" />
+              </div>
+              <div class="input-group">
+                <label for="whatsapp">WhatsApp:</label>
+                <input type="tel" name="whatsapp" id="whatsapp" />
+              </div>
+              <div class="input-group">
+                <label for="message">Mensagem:</label>
+                <textarea name="message" id="message"></textarea>
+              </div>
+              <div class="input-group">
+                <input type="submit" value="Enviar" />
+              </div>
+            </fieldset>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <!-- Colocar id no footer -->
+    <footer id="rodape">
+      <div class="container">
+        <p>&copy; 2026 Rtech - Todos os direitos reservados.</p>
+      </div>
+    </footer>
+
+    <script>
+      const contactForm = document.getElementById("contact-form");
+
+      contactForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const name = document.getElementById("name").value.trim();
+        const lastname = document.getElementById("lastname").value.trim();
+        const whatsapp = document.getElementById("whatsapp").value.trim();
+        const message = document.getElementById("message").value.trim();
+
+        const content = [
+          "Dados do Formulario de Contato",
+          "------------------------------",
+          "Nome: " + name,
+          "Sobrenome: " + lastname,
+          "WhatsApp: " + whatsapp,
+          "Mensagem: " + message,
+        ].join("\n");
+
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const fileUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = fileUrl;
+        link.download = "contato.txt";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(fileUrl);
+        contactForm.reset();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+<script>
+  const alunos = ["Alexandre", "Ana Paula", "André", "Beatriz", "Ernani", "Lucas", "Matheus", "Rafael"];
+
+  document.write(`<h2> ${alunos[0]} </h2>`);
+  document.write(`<h2> Quantidade de alunos: ${alunos.length} </h2>`);
+  document.write(`<h2> Último aluno: ${alunos[alunos.length - 1]} </h2>`);
+
+
+  // for(let i = 0; i < alunos.length; i++) {
+  //   document.write(`<h2> Aluno ${i + 1}: ${alunos[i]} </h2>`);
+  // }
+
+  for( let aluno of alunos ) {
+    document.write(`<h2> Aluno: ${aluno} </h2>`);
+  }
+
+</script>

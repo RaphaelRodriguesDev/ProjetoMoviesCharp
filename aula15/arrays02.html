@@ -1,0 +1,28 @@
+<script>
+  const cidadesRJ = [
+    "Rio de Janeiro",
+    "Niterói",
+    "Petrópolis",
+    "Campos dos Goytacazes",
+    "Cabo Frio",
+    "Angra dos Reis",
+    "Armação dos Búzios",
+    "Volta Redonda",
+    "Nova Friburgo",
+    "Macaé",
+  ];
+
+  console.log(cidadesRJ);
+
+  // cidadesRJ.push("Teresópolis");
+  cidadesRJ.pop();
+  cidadesRJ.pop();
+  cidadesRJ.unshift("São Gonçalo");
+  cidadesRJ.shift();
+
+  for (let cidade of cidadesRJ) {
+    document.write(`<h2> Cidade: ${cidade} </h2>`);
+  }
+
+
+</script>

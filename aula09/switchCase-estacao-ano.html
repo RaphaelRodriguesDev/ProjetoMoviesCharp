@@ -1,0 +1,21 @@
+<script>
+  const mes = prompt("Digite o número do mês (1-12):");
+  let estacao;
+
+  switch(mes) {
+    case "12":
+    case "1":
+    case "2":
+      estacao = "Verão";
+      break;
+
+    case "3":
+    case "4":
+    case "5":
+      estacao = "Outono";
+      break;
+  }
+
+  // Exibe o resultado com uma mensagem formatada
+  document.write(`O mês ${mes} pertence à <strong>${estacao}</strong>.`);
+</script>

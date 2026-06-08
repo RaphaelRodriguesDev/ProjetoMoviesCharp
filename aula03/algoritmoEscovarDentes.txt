@@ -1,0 +1,28 @@
+Entro no banheiro.
+Pego a escova e a pasta no suporte.
+Retiro a tampa da pasta.
+Coloco pasta na escova.
+FECHO A PASTA.
+GUARDO A PASTA.
+Abro a torneira.
+Molho a escova na água da torneira.
+FECHO A TORNEIRA.
+Escovo os dentes.
+Coloco a escova na pia.
+ABRO A TORNEIRA.
+Enxáguo a boca.
+Lavo a escova e guardo no suporte.
+Fecho a água da torneira.
+Pego uma toalha de rosto e seco a boca.
+Guardo a toalha.
+Fecho a pasta com a tampa.
+Guardo a pasta no lugar.
+Lavo as mãos.
+Saio do banheiro.
+
+
+
+// Cada um tem um jeito
+// Cada um programa diferente
+// Temos que trabalhar em equipe
+// Sempre tem algum erro que nós não vemos em nosso codigo
